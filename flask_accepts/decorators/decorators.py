@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from ast import literal_eval
 from typing import Type, Union
 from flask import jsonify
 from werkzeug.wrappers import Response
@@ -114,7 +115,23 @@ def accepts(
             # Handle Marshmallow schema for request body
             if schema:
                 try:
-                    obj = schema.load(request.get_json())
+                    headers = request.headers['content-type']
+                    # allow parsing multipart/form-data and x-www-form-urlencoded
+                    if 'form' in headers:
+                        data = {**request.form}
+                        # convert form data with value string of dict/list to object dict/list
+                        for key, value in data.items():
+                            if isinstance(value, str) and value.strip():
+                                try:
+                                    data[key] = literal_eval(value)
+                                except (ValueError, SyntaxError):
+                                    pass
+                        # add files to data
+                        data.update(request.files)
+                    else:
+                        data = request.get_json()
+
+                    obj = schema.load(data)
                     request.parsed_obj = obj
                 except ValidationError as ex:
                     schema_error = ex.messages
