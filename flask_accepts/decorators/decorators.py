@@ -131,7 +131,7 @@ def accepts(
                     else:
                         data = request.get_json()
 
-                    obj = schema.load(data)
+                    obj = schema.load(request.get_json(force=True))
                     request.parsed_obj = obj
                 except ValidationError as ex:
                     schema_error = ex.messages
@@ -199,6 +199,9 @@ def accepts(
                     api=api,
                     operation="load",
                 )
+                if schema.many is True:
+                    body = [body]
+
                 params = {
                     "expect": [body, _parser],
                 }
@@ -320,7 +323,7 @@ def responds(
             elif _parser:
                 api.add_model(model_name, model_from_parser)
                 inner = _document_like_marshal_with(
-                    model_from_parser, status_code=status_code
+                    model_from_parser, status_code=status_code, description=description
                 )(inner)
 
         return inner
