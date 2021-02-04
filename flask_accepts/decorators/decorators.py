@@ -115,7 +115,7 @@ def accepts(
             # Handle Marshmallow schema for request body
             if schema:
                 try:
-                    headers = request.headers['content-type']
+                    headers = request.headers.get('content-type', '')
                     # allow parsing multipart/form-data and x-www-form-urlencoded
                     if 'form' in headers:
                         data = {**request.form}
