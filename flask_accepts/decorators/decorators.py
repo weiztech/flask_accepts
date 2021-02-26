@@ -129,9 +129,9 @@ def accepts(
                         # add files to data
                         data.update(request.files)
                     else:
-                        data = request.get_json()
+                        data = request.get_json(force=True)
 
-                    obj = schema.load(request.get_json(force=True))
+                    obj = schema.load(data)
                     request.parsed_obj = obj
                 except ValidationError as ex:
                     schema_error = ex.messages
